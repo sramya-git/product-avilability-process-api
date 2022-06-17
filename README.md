@@ -20,9 +20,6 @@ Please review the terms of the license before downloading and using this templat
 
 As a Customer I want a service to request information about availability of products and reserve products from order.   
 
-### GET/availability
-This endpoint will trigger flow getAvailability which obtains availability of product variants in stores from Locations System API, partners from Partners System API and warehouse from Inventory System API. 
-
 ### GET/locations/{locationId}/availability
 This endpoint will trigger flow getAvailabilityForLocation which obtains availability, totalTax and totalShipping of variant based on the locationId and locationType (STORE,  WAREHOUSE, PARTNER). 
 
@@ -31,9 +28,6 @@ This endpoint will trigger flow getTaxes which obtains total tax of variant base
 
 ### GET/locations/{locationId}/shipping
 This endpoint will trigger flow getShipping which obtains total shipping cost of variant based on the locationId and locationType (STORE,  WAREHOUSE, PARTNER).
-
-### POST/reservation
-This endpoint will trigger flow createReservation which reserves variant in store or warehouse.
 
 # Considerations <a name="considerations"/>
 
@@ -96,24 +90,6 @@ Detailed list with examples:
 + locations-system-api.port `443`
 + locations-system-api.basePath `/path/api`
 + locations-system-api.protocol `HTTPS`
-
-#### Inventory system API
-+ inventory-system-api.host `inventory.mulesoft.com`
-+ inventory-system-api.port `443`
-+ inventory-system-api.basePath `/path`
-+ inventory-system-api.protocol `HTTPS`
-
-#### Partner system API
-+ partners-system-api.host `partners.mulesoft.com`
-+ partners-system-api.port `443`
-+ partners-system-api.basePath `/path`
-+ partners-system-api.protocol `HTTPS`
-
-#### Product system API
-+ product-system-api.host `product.mulesoft.com`
-+ product-system-api.port `443`
-+ product-system-api.basePath `/path`
-+ product-system-api.protocol `HTTPS`
 
 #### Tax and Shipping properties
 + tax=`10.5`
