@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:retail-inventory-system-api="http://www.mulesoft.org/schema/mule/retail-inventory-system-api"
+	xmlns:retail-partners-system-api="http://www.mulesoft.org/schema/mule/retail-partners-system-api"
+	xmlns:retail-product-system-api="http://www.mulesoft.org/schema/mule/retail-product-system-api"
+	xmlns:retail-locations-system-api="http://www.mulesoft.org/schema/mule/retail-locations-system-api"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/retail-locations-system-api http://www.mulesoft.org/schema/mule/retail-locations-system-api/current/mule-retail-locations-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-product-system-api http://www.mulesoft.org/schema/mule/retail-product-system-api/current/mule-retail-product-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-partners-system-api http://www.mulesoft.org/schema/mule/retail-partners-system-api/current/mule-retail-partners-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-inventory-system-api http://www.mulesoft.org/schema/mule/retail-inventory-system-api/current/mule-retail-inventory-system-api.xsd">
+	
+	<global-property doc:name="Global Property" doc:id="14ae623a-bfbf-4598-9094-0d57ecf11851" name="mule.env" value="dev" />
+	<configuration-properties doc:name="Configuration properties" doc:id="3e606fae-61c6-405e-9f2d-03a62304a934" file="mule.${mule.env}.properties"/>
+	<configuration-properties doc:name="Configuration properties" doc:id="3e606fae-61c6-405e-9f2d-03a62304a934" file="common.properties"/>
+	
+	<http:listener-config name="retail_product_availability_process_api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>
+    
+    <apikit:config name="retail_product_availability_process_api-config" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" api="api/retail_product_availability_process_api.raml"/>
+	
+	<retail-inventory-system-api:config
+		name="Retail_Inventory_System_API_Config" 
+		doc:name="Retail_Inventory_System_API Config"
+		doc:id="9291e9be-c1e4-49bd-9596-0083feb8138e" 
+		property_host="${inventory-system-api.host}"
+		property_port="${inventory-system-api.port}" 
+		property_basePath="${inventory-system-api.basePath}" 
+		property_protocol="${inventory-system-api.protocol}" >
+		<retail-inventory-system-api:connection />
+	</retail-inventory-system-api:config>
+		
+	<retail-partners-system-api:config 
+		name="Retail_Partners_System_API_Config" 
+		doc:name="Retail_Partners_System_API Config" 
+		doc:id="a5f3f1c6-4e35-4fa9-b515-18f478618cc6" 
+		property_host="${partners-system-api.host}"
+		property_port="${partners-system-api.port}" 
+		property_basePath="${partners-system-api.basePath}" 
+		property_protocol="${partners-system-api.protocol}" >
+		<retail-partners-system-api:connection />
+	</retail-partners-system-api:config>
+		
+	<retail-locations-system-api:config 
+		name="Retail_Locations_System_API_Config" 
+		doc:name="Retail Locations System API Config" 
+		doc:id="4175ce59-883f-4d14-a07a-46189e0ab80d" 
+		property_host="${locations-system-api.host}"
+		property_port="${locations-system-api.port}" 
+		property_basePath="${locations-system-api.basePath}" 
+		property_protocol="${locations-system-api.protocol}" >
+		<retail-locations-system-api:connection />
+	</retail-locations-system-api:config>
+	
+	<retail-product-system-api:config 
+		name="Retail_Product_System_API_Config" 
+		doc:name="Retail Product System API Config" 
+		doc:id="4558fe66-4ecb-4d79-bda3-09a7ce511f41" 
+		property_host="${product-system-api.host}"
+		property_port="${product-system-api.port}" 
+		property_basePath="${product-system-api.basePath}" 
+		property_protocol="${product-system-api.protocol}" >
+		<retail-product-system-api:connection/>
+	</retail-product-system-api:config>
+</mule>

@@ -1,0 +1,45 @@
+{
+  "configs": [
+    "implementation.xml",
+    "global.xml",
+    "process_api.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "org.mule.templates:template-retail-product-availability-process-api:2.1.2-SNAPSHOT",
+  "minMuleVersion": "4.2.1",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "log4j2.xml",
+        "global.xml",
+        "common.properties",
+        "application-types.xml",
+        "mule.prod.properties",
+        "mule.dev.properties",
+        "process_api.xml",
+        "api/traits/productSearch.raml",
+        "api/exchange_modules/org.mule.templates/retail-store/1.0.1/retail_store.raml",
+        "api/exchange_modules/org.mule.templates/retail-partner/1.0.0/retail_partner.raml",
+        "api/exchange_modules/org.mule.templates/retail-geosearch/1.0.0/retail_geosearch.raml",
+        "api/exchange_modules/org.mule.templates/retail-common/1.0.1/retail_common.raml",
+        "api/exchange_modules/org.mule.templates/retail-inventory/1.0.1/retail_inventory.raml",
+        "api/examples/product_availability_for_location_response.yaml",
+        "api/examples/shipping-cost-response.yaml",
+        "api/examples/total-tax-response.yaml",
+        "api/examples/product-reservation-request.yaml",
+        "api/examples/product-availability-response.yaml",
+        "api/retail_product_availability_process_api.raml",
+        "implementation.xml",
+        "mule.qa.properties"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}

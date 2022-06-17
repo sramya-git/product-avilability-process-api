@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:retail-product-system-api="http://www.mulesoft.org/schema/mule/retail-product-system-api"
+	xmlns:retail-partners-system-api="http://www.mulesoft.org/schema/mule/retail-partners-system-api"
+	xmlns:retail-inventory-system-api="http://www.mulesoft.org/schema/mule/retail-inventory-system-api"
+	xmlns:retail-locations-system-api="http://www.mulesoft.org/schema/mule/retail-locations-system-api"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/retail-locations-system-api http://www.mulesoft.org/schema/mule/retail-locations-system-api/current/mule-retail-locations-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-inventory-system-api http://www.mulesoft.org/schema/mule/retail-inventory-system-api/current/mule-retail-inventory-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-partners-system-api http://www.mulesoft.org/schema/mule/retail-partners-system-api/current/mule-retail-partners-system-api.xsd
+http://www.mulesoft.org/schema/mule/retail-product-system-api http://www.mulesoft.org/schema/mule/retail-product-system-api/current/mule-retail-product-system-api.xsd">
+	<flow name="getShipping" doc:id="c1364d77-06d7-4eb5-8543-b5bdc3768075">
+		<choice doc:name="Choice by target location type" doc:id="946a7a85-a78d-4755-9a45-846cfaa0ca3f">
+			<when expression="#[attributes.queryParams.locationType == 'PARTNER']">
+				<retail-partners-system-api:get-partner doc:name="Get partner by partner id" doc:id="5234743a-c13a-410e-95c7-4fac8f307f68" config-ref="Retail_Partners_System_API_Config" partner-id="#[attributes.uriParams.locationId]" />
+				<ee:transform doc:name="Build response" doc:id="518bc896-7e9f-4b5d-a2ea-78baea4a9f57">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+if (attributes.statusCode == 200) {
+	totalShippingCost: payload.shippingPrice as Number
+} else {
+	message: "Resource not found"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[attributes.queryParams.locationType == 'WAREHOUSE']">
+				<ee:transform doc:name="Build response with total shipping from properties" doc:id="d924111c-0740-4343-99c0-b8a22101432b">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	totalShippingCost: p("shipping") as Number
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Default total shipping = 0" doc:id="d35ccc76-3a1a-4f11-885e-c67a988533ce">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	totalShippingCost: 0
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getTaxes" doc:id="3b76b97b-48ad-4fe9-9299-b11e3fe417fd">
+		<ee:transform doc:name="Prepare params var"
+			doc:id="2e991a71-4492-4960-b298-eba576a881a9">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="params"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	quantity: attributes.queryParams.quantity,
+	locationId: attributes.uriParams.locationId,
+	locationType: attributes.queryParams.locationType,
+	productId: attributes.queryParams.productId,
+	variantId: attributes.queryParams.variantId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice by target location type" doc:id="c9aeed17-504e-4024-a554-2b06ea1c6c0b">
+			<when expression="#[vars.params.locationType == 'PARTNER']">
+				<retail-partners-system-api:locate-partners-with-product
+					doc:name="Get product by Id and variantId" doc:id="6f6ae420-08b1-4885-9ede-aa2c02ff2e47"
+					product-id="#[vars.params.productId]" variant-id="#[vars.params.variantId]"
+					config-ref="Retail_Partners_System_API_Config" quantity="#[vars.params.quantity]" />
+				<ee:transform doc:name="Get total tax from response"
+					doc:id="dc7b8180-3ca0-42c7-9ca8-59a5fa7944bd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+using (partner = payload.results filter ($.partnerInfo.partnerId == vars.params.locationId))
+{
+	totalTax: if (partner[0] != null) (partner[0].tax * vars.params.quantity) as Number else 0
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<retail-product-system-api:get-product
+					doc:name="Get product by product id" doc:id="ffc2e825-2a64-4b08-96ef-908e883cbef9"
+					config-ref="Retail_Product_System_API_Config" product-id="#[vars.params.productId]" />
+				<ee:transform doc:name="Get total tax from response"
+					doc:id="8c03aaa7-30ca-4f7a-9ddb-b83521370dd8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	totalTax: ((round (p('tax') * payload.price.amount.currencyValue * vars.params.quantity)) / 100) as Number
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

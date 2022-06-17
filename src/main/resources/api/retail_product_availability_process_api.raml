@@ -1,0 +1,173 @@
+#%RAML 1.0
+title: Retail Product Availability Process API
+version: v2.0
+baseUri: http://localhost:8081/api
+
+uses: 
+  inventory: /exchange_modules/org.mule.templates/retail-inventory/1.0.1/retail_inventory.raml
+
+traits: 
+  geoSearch: !include /exchange_modules/org.mule.templates/retail-geosearch/1.0.0/retail_geosearch.raml
+  productSearch: !include traits/productSearch.raml 
+
+types: 
+
+  AvailabilityForLocation: 
+    type: object
+    description: Availability of product for location
+    properties: 
+      productId: 
+        type: string
+        description: Identifier of product
+      variantId: 
+        type: string
+        description: Identifier of product variant 
+      locationId: 
+        type: string
+        description: Identifier of location
+      locationType: 
+        type: string
+        enum: [STORE, WAREHOUSE, PARTNER]
+        description: Type of location
+      quantityInStock: 
+        type: integer
+        description: Count of products in stock 
+      tax:  
+        type: number
+        description: Tax price for product
+      shipping: 
+        type: number
+        description: Shipping price 
+
+
+  ReservationRequest: 
+    type: object
+    description: Reservation of product
+    properties:
+      productId: 
+        type: string
+        description: Identifier of product
+      variantId: 
+        type: string
+        description: Identifier of product variant 
+      customerId: 
+        type: string
+        description: Identifier of customer 
+      quantity: 
+        type: integer
+        description: Count of reserved product
+      locationId: 
+        type: string
+        description: Identifier of location
+      locationType: 
+        type: string
+        enum: [STORE, WAREHOUSE, PARTNER]
+        description: Type of location
+        
+  Tax:
+    description: |
+      Tax value 
+    properties: 
+      totalTax: 
+        type: number
+        description: Total tax
+      
+  Shipping:   
+    description: |
+      Shipping value  
+    properties:
+      totalShippingCost: 
+        type: number
+        description: Total shipping value
+
+  MessageResponse:
+    description: |
+      Message response
+    properties:
+      message: string 
+  
+/availability:       
+  get:
+    displayName: Get availability
+    is: [ geoSearch, productSearch ]
+    responses:
+      200: 
+        body: 
+          application/json:
+            type: inventory.Availability
+            example: !include examples/product-availability-response.yaml
+
+/reservation: 
+  post:
+    displayName: Create reservation
+    body:
+      application/json:
+        type: ReservationRequest 
+        example: !include examples/product-reservation-request.yaml
+    responses:
+      201: 
+        body:
+          application/json:
+            type: MessageResponse
+            example: 
+              {
+              "message": "Product was reserved"   
+              }
+                
+/locations:
+  /{locationId}: 
+    /availability:       
+        get:
+          displayName: Get availability for location
+          is: [  geoSearch, productSearch ]
+          queryParameters: 
+              locationType:
+                required: true
+                type: string
+                enum: [STORE, WAREHOUSE, PARTNER]
+              price: 
+                type: number
+                default: 0
+          responses:
+            200: 
+              body: 
+                application/json:
+                  type: AvailabilityForLocation
+                  example: !include examples/product_availability_for_location_response.yaml
+
+    /shipping:
+        get:
+          displayName: Get shipping price 
+          is: [ geoSearch, productSearch ]
+          queryParameters:
+            locationType:
+              type: string 
+              enum: [STORE, WAREHOUSE, PARTNER]
+          description: |
+            Shipping value for location
+          responses: 
+            200:
+              body: 
+                application/json:
+                  type: Shipping
+                  example: !include examples/shipping-cost-response.yaml            
+    
+    /taxes:
+        get:
+          displayName: Get tax price
+          description: |
+            Tax value for location
+          is: [ geoSearch, productSearch ]
+          queryParameters: 
+            locationType:
+              type: string 
+              enum: [STORE, WAREHOUSE, PARTNER]
+            zipCode?: 
+              type: string        
+          responses: 
+            200:
+              body: 
+                application/json:
+                  type: Tax
+                  example: !include examples/total-tax-response.yaml
+
